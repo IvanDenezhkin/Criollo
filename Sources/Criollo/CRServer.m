@@ -236,14 +236,18 @@ NS_ASSUME_NONNULL_END
 
 - (void)didCloseConnection:(CRConnection*)connection {
     CRServer * __weak server = self;
-    if ( [self.delegate respondsToSelector:@selector(server:didCloseConnection:)]) {
+    
+    if ([self.delegate respondsToSelector:@selector(server:didCloseConnection:)]) {
         dispatch_async(self.delegateQueue, ^{
             [server.delegate server:server didCloseConnection:connection];
         });
     }
-    dispatch_async(self.isolationQueue, ^(){
-        [server.connections removeObject:connection];
-    });
+    
+    if (self.isolationQueue) {
+        dispatch_async(self.isolationQueue, ^(){
+            [server.connections removeObject:connection];
+        });
+    }
 }
 
 #pragma mark - Queues
